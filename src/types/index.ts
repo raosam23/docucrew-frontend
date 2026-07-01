@@ -26,3 +26,8 @@ export type DocRecord = {
     error_message: string | null;
     created_at: string;
 };
+
+export type CreateCollectionPayload = {
+    name: string;
+    description?: string;
+}
