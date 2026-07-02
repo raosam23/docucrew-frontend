@@ -29,5 +29,27 @@ export type DocRecord = {
 
 export type CreateCollectionPayload = {
     name: string;
-    description?: string;
+    description?: string | null;
+};
+
+
+
+export type Citation = {
+    filename: string;
+    chunk_index: number;
+    relevance_score?: number | null;
+}
+
+export type QueryResponse = {
+    answer: string;
+    citations?: Citation[];
+    query_id: string;
+}
+
+export type QueryHistoryItem = {
+    id: string;
+    question: string;
+    answer: string;
+    citations?: Citation[];
+    created_at: string;
 }

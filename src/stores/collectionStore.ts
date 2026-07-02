@@ -6,6 +6,8 @@ type CollectionState = {
     collections: Collection[];
     isLoading: boolean;
     documents: DocRecord[];
+    activeCollection: Collection | null;
+    fetchCollection: (collectionId: string) => Promise<void>;
     fetchCollections: () => Promise<void>;
     createCollection: (payload: CreateCollectionPayload) => Promise<Collection>;
     fetchDocuments: (collectionId: string) => Promise<void>;
@@ -17,6 +19,19 @@ export const useCollectionStore = create<CollectionState>()(set => ({
     collections: [],
     isLoading: false,
     documents: [],
+    activeCollection: null,
+    fetchCollection: async (collectionId: string) => {
+        try {
+            set({ isLoading: true });
+            const collection: Collection = await api.get(`api/collections/${collectionId}`).json<Collection>();
+            set({ activeCollection: collection });
+        } catch (error: unknown) {
+            console.error("Error fetching collection: ", error);
+            throw error as Error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
     fetchCollections: async () => {
         try {
             set({ isLoading: true });

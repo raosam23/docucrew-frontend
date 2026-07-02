@@ -24,7 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     };
     checkAuth();
   }, [setUser, router]);
-  
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -34,26 +34,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       console.error("Error logging out:", error);
       enqueueSnackbar("Failed to log out", { variant: "error" });
     }
-  }
+  };
 
   if (isLoading) return null;
 
   return (
-    <>
-      <nav className="flex items-center justify-between px-6 py-3 bg-background border-b border-border">
+    <div className="flex flex-col h-screen">
+      <nav className="flex items-center justify-between px-6 py-3 bg-background border-b border-border shrink-0">
         <h1 className="text-4xl font-bold text-foreground">DocuCrew</h1>
         <div className="flex items-center gap-4">
           <span className="text-base text-muted-foreground">
-            {user?.name ??
-              user?.email ??
-              "User"}
+            {user?.name ?? user?.email ?? "User"}
           </span>
           <Button variant="outline" onClick={handleLogout}>
             Logout
           </Button>
         </div>
       </nav>
-      {children}
-    </>
+      <div className="flex-1 min-h-0">{children}</div>
+    </div>
   );
 }
