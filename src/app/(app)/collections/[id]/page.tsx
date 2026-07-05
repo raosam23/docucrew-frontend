@@ -218,48 +218,50 @@ const CollectionWorkspacePage = () => {
           </div>
         </aside>
         <section className="flex min-h-0 w-full flex-col rounded-lg border border-border bg-card lg:w-[70%] h-full">
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-6">
             {queryHistory.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No messages yet. Ask a question below.
               </p>
             ) : (
               queryHistory.map((query) => (
-                <div className="space-y-2" key={query.id}>
-                  <p className="text-sm font-medium text-foreground">
-                    {query.question}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {query.answer}
-                  </p>
-                  {query.citations && query.citations.length > 0 && (
-                    <details className="pt-1">
-                      <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                        Sources ({query.citations.length})
-                      </summary>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {query.citations.map((citation, index) => (
-                          <Badge
-                            key={`${query.id}-citation-${index}`}
-                            variant="outline"
-                            className="h-7 rounded-lg px-2.5 text-[0.8rem] font-normal"
-                          >
-                            <span className="truncate max-w-48">
-                              {citation.filename}
-                            </span>
-                            <span className="text-muted-foreground">
-                              · chunk {citation.chunk_index + 1}
-                            </span>
-                            {citation.relevance_score != null && (
-                              <span className="text-muted-foreground">
-                                · {Math.round(citation.relevance_score * 100)}%
-                              </span>
-                            )}
-                          </Badge>
-                        ))}
-                      </div>
-                    </details>
-                  )}
+                <div className="space-y-4" key={query.id}>
+                  <div className="flex justify-end">
+                    <div className="max-w-[85%] rounded-lg bg-muted px-4 py-2 text-sm text-foreground">
+                      {query.question}
+                    </div>
+                  </div>
+                  <div className="w-full space-y-2">
+                      <p className="text-sm text-foreground">{query.answer}</p>
+                      {query.citations && query.citations.length > 0 && (
+                        <details className="pt-1">
+                          <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                            Sources ({query.citations.length})
+                          </summary>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {query.citations.map((citation, index) => (
+                              <Badge
+                                key={`${query.id}-citation-${index}`}
+                                variant="outline"
+                                className="h-7 rounded-lg px-2.5 text-[0.8rem] font-normal"
+                              >
+                                <span className="truncate max-w-48">
+                                  {citation.filename}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  · chunk {citation.chunk_index + 1}
+                                </span>
+                                {citation.relevance_score != null && (
+                                  <span className="text-muted-foreground">
+                                    · {Math.round(citation.relevance_score * 100)}%
+                                  </span>
+                                )}
+                              </Badge>
+                            ))}
+                          </div>
+                        </details>
+                      )}
+                  </div>
                 </div>
               ))
             )}
@@ -272,25 +274,26 @@ const CollectionWorkspacePage = () => {
                   : "Waiting for all documents to be ready."}
               </p>
             )}
-            <Textarea
-              value={queryInput}
-              onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setQueryInput(event.target.value)
-              }
-              placeholder="Ask a question about your documents..."
-              disabled={isQuerying || !canQuery}
-              rows={4}
-              onKeyDown={handleQueryKeyDown}
-              className="resize-none bg-background border-border text-foreground"
-            />
-            <Button
-              type="button"
-              className="mt-2"
-              disabled={!canQuery || isQuerying || queryInput.trim() === ""}
-              onClick={() => void handleSubmitQuery()}
-            >
-              {isQuerying ? "Querying..." : "Submit Query"}
-            </Button>
+            <div className="relative">
+              <Textarea
+                value={queryInput}
+                onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setQueryInput(event.target.value)
+                }
+                placeholder="Ask a question about your documents..."
+                disabled={isQuerying || !canQuery}
+                onKeyDown={handleQueryKeyDown}
+                className="min-h-16 resize-none bg-background border-border pb-12 text-foreground"
+              />
+              <Button
+                type="button"
+                className="absolute bottom-3 right-3"
+                disabled={!canQuery || isQuerying || queryInput.trim() === ""}
+                onClick={() => void handleSubmitQuery()}
+              >
+                {isQuerying ? "Querying..." : "Submit Query"}
+              </Button>
+            </div>
           </div>
         </section>
       </div>
