@@ -6,23 +6,29 @@ import { useSnackbar } from "notistack";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 
 const CollectionWorkspacePage = () => {
   const { id } = useParams();
   const {
     activeCollection,
+    isLoading,
+    queryHistory,
+    documents,
+    isQuerying,
     fetchCollection,
     fetchDocuments,
-    isLoading,
-    documents,
     uploadDocuments,
     deleteDocument,
+    fetchQueryHistory,
+    submitQuery,
   } = useCollectionStore();
   const { enqueueSnackbar } = useSnackbar();
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(
     null,
   );
+  const [queryInput, setQueryInput] = useState<string>("");
 
   const handleUploadMoreDocuments = async (files: File[]) => {
     if (!id) return;
@@ -80,6 +86,7 @@ const CollectionWorkspacePage = () => {
         await Promise.all([
           fetchCollection(collectionId),
           fetchDocuments(collectionId),
+          fetchQueryHistory(collectionId),
         ]);
       } catch (error: unknown) {
         enqueueSnackbar("Error in loading collection data", {
@@ -89,7 +96,7 @@ const CollectionWorkspacePage = () => {
       }
     };
     loadCollectionData();
-  }, [id, fetchCollection, fetchDocuments, enqueueSnackbar]);
+  }, [id, fetchCollection, fetchDocuments, enqueueSnackbar, fetchQueryHistory]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -98,6 +105,41 @@ const CollectionWorkspacePage = () => {
   if (!activeCollection) {
     return <div>Collection not found</div>;
   }
+  const canQuery =
+    documents.length > 0 && documents.every((doc) => doc.status === "ready");
+
+  const handleSubmitQuery = async () => {
+    if (!id) return;
+
+    if (queryInput.trim() === "") {
+      enqueueSnackbar("Please enter a question", { variant: "error" });
+      return;
+    }
+
+    if (!canQuery) {
+      enqueueSnackbar("All documents must be ready before querying", {
+        variant: "error",
+      });
+      return;
+    }
+    try {
+      await submitQuery(id as string, queryInput.trim());
+      setQueryInput("");
+      enqueueSnackbar("Query submitted", { variant: "success" });
+    } catch (error: unknown) {
+      console.error("Error in submitting query: ", error);
+      enqueueSnackbar("Failed to submit query", { variant: "error" });
+    }
+  };
+  const handleQueryKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (!canQuery || isQuerying || queryInput.trim() === "") return;
+    if (event.key !== "Enter" || event.shiftKey) return;
+
+    event.preventDefault();
+    void handleSubmitQuery();
+  };
   return (
     <main className="h-full bg-background p-6">
       <div className="flex gap-6 h-full">
@@ -175,12 +217,80 @@ const CollectionWorkspacePage = () => {
             )}
           </div>
         </aside>
-        <section className="flex min-h-0 w-full flex-col rounded-lg border border-border bg-card lg:w-[70%]">
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">
-            <p className="text-sm text-muted-foreground">Chat UI coming next</p>
+        <section className="flex min-h-0 w-full flex-col rounded-lg border border-border bg-card lg:w-[70%] h-full">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+            {queryHistory.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No messages yet. Ask a question below.
+              </p>
+            ) : (
+              queryHistory.map((query) => (
+                <div className="space-y-2" key={query.id}>
+                  <p className="text-sm font-medium text-foreground">
+                    {query.question}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {query.answer}
+                  </p>
+                  {query.citations && query.citations.length > 0 && (
+                    <details className="pt-1">
+                      <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                        Sources ({query.citations.length})
+                      </summary>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {query.citations.map((citation, index) => (
+                          <Badge
+                            key={`${query.id}-citation-${index}`}
+                            variant="outline"
+                            className="h-7 rounded-lg px-2.5 text-[0.8rem] font-normal"
+                          >
+                            <span className="truncate max-w-48">
+                              {citation.filename}
+                            </span>
+                            <span className="text-muted-foreground">
+                              · chunk {citation.chunk_index + 1}
+                            </span>
+                            {citation.relevance_score != null && (
+                              <span className="text-muted-foreground">
+                                · {Math.round(citation.relevance_score * 100)}%
+                              </span>
+                            )}
+                          </Badge>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              ))
+            )}
           </div>
           <div className="shrink-0 border-t border-border p-4">
-            <p className="text-sm text-muted-foreground">Query input coming next</p>
+            {!canQuery && (
+              <p className="mb-2 text-sm text-muted-foreground">
+                {documents.length === 0
+                  ? "No documents added yet"
+                  : "Waiting for all documents to be ready."}
+              </p>
+            )}
+            <Textarea
+              value={queryInput}
+              onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setQueryInput(event.target.value)
+              }
+              placeholder="Ask a question about your documents..."
+              disabled={isQuerying || !canQuery}
+              rows={4}
+              onKeyDown={handleQueryKeyDown}
+              className="resize-none bg-background border-border text-foreground"
+            />
+            <Button
+              type="button"
+              className="mt-2"
+              disabled={!canQuery || isQuerying || queryInput.trim() === ""}
+              onClick={() => void handleSubmitQuery()}
+            >
+              {isQuerying ? "Querying..." : "Submit Query"}
+            </Button>
           </div>
         </section>
       </div>
