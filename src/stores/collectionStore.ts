@@ -14,6 +14,7 @@ type CollectionState = {
   fetchCollection: (collectionId: string) => Promise<void>;
   fetchCollections: () => Promise<void>;
   createCollection: (payload: CreateCollectionPayload) => Promise<Collection>;
+  deleteCollection: (collectionId: string) => Promise<void>;
   fetchDocuments: (collectionId: string) => Promise<void>;
   uploadDocuments: (
     collectionId: string,
@@ -73,13 +74,37 @@ export const useCollectionStore = create<CollectionState>()((set) => ({
           },
         })
         .json<Collection>();
-
       set((state) => ({
         collections: [...state.collections, collection],
       }));
       return collection;
     } catch (error: unknown) {
       console.error("Error creating collection: ", error);
+      throw error as Error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  deleteCollection: async (collectionId: string) => {
+    try {
+      set({ isLoading: true });
+      await api.delete(`api/collections/${collectionId}`);
+      set((state) => {
+        const collections = state.collections.filter(
+          (collection) => collection.id !== collectionId,
+        );
+        if (state.activeCollection?.id === collectionId) {
+          return {
+            collections,
+            activeCollection: null,
+            documents: [],
+            queryHistory: [],
+          };
+        }
+        return { collections };
+      });
+    } catch (error: unknown) {
+      console.error("Error deleting collection: ", error);
       throw error as Error;
     } finally {
       set({ isLoading: false });
