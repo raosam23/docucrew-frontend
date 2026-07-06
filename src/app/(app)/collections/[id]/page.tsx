@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useCollectionStore } from "@/stores/collectionStore";
 import { useSnackbar } from "notistack";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ const CollectionWorkspacePage = () => {
     null,
   );
   const [queryInput, setQueryInput] = useState<string>("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const handleUploadMoreDocuments = async (files: File[]) => {
     if (!id) return;
@@ -98,6 +99,11 @@ const CollectionWorkspacePage = () => {
     loadCollectionData();
   }, [id, fetchCollection, fetchDocuments, enqueueSnackbar, fetchQueryHistory]);
 
+  useEffect(() => {
+    if (isLoading) return;
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [queryHistory, isLoading]);
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -105,6 +111,7 @@ const CollectionWorkspacePage = () => {
   if (!activeCollection) {
     return <div>Collection not found</div>;
   }
+
   const canQuery =
     documents.length > 0 && documents.every((doc) => doc.status === "ready");
 
@@ -232,39 +239,41 @@ const CollectionWorkspacePage = () => {
                     </div>
                   </div>
                   <div className="w-full space-y-2">
-                      <p className="text-sm text-foreground">{query.answer}</p>
-                      {query.citations && query.citations.length > 0 && (
-                        <details className="pt-1">
-                          <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                            Sources ({query.citations.length})
-                          </summary>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {query.citations.map((citation, index) => (
-                              <Badge
-                                key={`${query.id}-citation-${index}`}
-                                variant="outline"
-                                className="h-7 rounded-lg px-2.5 text-[0.8rem] font-normal"
-                              >
-                                <span className="truncate max-w-48">
-                                  {citation.filename}
-                                </span>
+                    <p className="text-sm text-foreground">{query.answer}</p>
+                    {query.citations && query.citations.length > 0 && (
+                      <details className="pt-1">
+                        <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                          Sources ({query.citations.length})
+                        </summary>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {query.citations.map((citation, index) => (
+                            <Badge
+                              key={`${query.id}-citation-${index}`}
+                              variant="outline"
+                              className="h-7 rounded-lg px-2.5 text-[0.8rem] font-normal"
+                            >
+                              <span className="truncate max-w-48">
+                                {citation.filename}
+                              </span>
+                              <span className="text-muted-foreground">
+                                · chunk {citation.chunk_index + 1}
+                              </span>
+                              {citation.relevance_score != null && (
                                 <span className="text-muted-foreground">
-                                  · chunk {citation.chunk_index + 1}
+                                  · {Math.round(citation.relevance_score * 100)}
+                                  %
                                 </span>
-                                {citation.relevance_score != null && (
-                                  <span className="text-muted-foreground">
-                                    · {Math.round(citation.relevance_score * 100)}%
-                                  </span>
-                                )}
-                              </Badge>
-                            ))}
-                          </div>
-                        </details>
-                      )}
+                              )}
+                            </Badge>
+                          ))}
+                        </div>
+                      </details>
+                    )}
                   </div>
                 </div>
               ))
             )}
+            <div ref={chatEndRef} />
           </div>
           <div className="shrink-0 border-t border-border p-4">
             {!canQuery && (
