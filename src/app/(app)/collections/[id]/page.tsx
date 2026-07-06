@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 const CollectionWorkspacePage = () => {
   const { id } = useParams();
@@ -149,6 +151,13 @@ const CollectionWorkspacePage = () => {
   };
   return (
     <main className="h-full bg-background p-6">
+      <Link
+        href="/dashboard"
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Back to collections
+      </Link>
       <div className="flex gap-6 h-full">
         <aside className="w-full lg:w-[30%] rounded-lg border border-border bg-card p-4 space-y-4 overflow-y-auto min-h-0">
           <div className="space-y-1">
