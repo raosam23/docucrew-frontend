@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { User } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useSnackbar } from "notistack";
+import LoadingState from "@/components/loading/LoadingState";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { setUser, user, logout } = useAuthStore();
@@ -36,7 +37,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   };
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen">
+        <LoadingState message="Loading user data..." />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -51,7 +58,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Button>
         </div>
       </nav>
-      <div className="flex-1 min-h-0">{children}</div>
+      <div className="flex-1 min-h-0 flex-col">{children}</div>
     </div>
   );
 }

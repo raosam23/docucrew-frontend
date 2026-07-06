@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import LoadingState from "@/components/loading/LoadingState";
+import ButtonLoader from "@/components/loading/ButtonLoader";
 
 const CollectionWorkspacePage = () => {
   const { id } = useParams();
@@ -107,7 +109,7 @@ const CollectionWorkspacePage = () => {
   }, [queryHistory, isLoading]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingState message="Loading collection data..." />;
   }
 
   if (!activeCollection) {
@@ -186,7 +188,7 @@ const CollectionWorkspacePage = () => {
               document.getElementById("upload-more-documents")?.click()
             }
           >
-            {isUploading ? "Uploading..." : "Add documents"}
+            {isUploading ? <ButtonLoader /> : "Add documents"}
           </Button>
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-foreground">Documents</h2>
@@ -224,9 +226,11 @@ const CollectionWorkspacePage = () => {
                       document.status === "processing"
                     }
                   >
-                    {deletingDocumentId === document.id
-                      ? "Deleting..."
-                      : "Delete"}
+                    {deletingDocumentId === document.id ? (
+                      <ButtonLoader size={16} />
+                    ) : (
+                      "Delete"
+                    )}
                   </Button>
                 </div>
               ))
