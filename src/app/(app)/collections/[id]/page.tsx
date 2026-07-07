@@ -137,7 +137,6 @@ const CollectionWorkspacePage = () => {
     try {
       await submitQuery(id as string, queryInput.trim());
       setQueryInput("");
-      enqueueSnackbar("Query submitted", { variant: "success" });
     } catch (error: unknown) {
       console.error("Error in submitting query: ", error);
       enqueueSnackbar("Failed to submit query", { variant: "error" });
