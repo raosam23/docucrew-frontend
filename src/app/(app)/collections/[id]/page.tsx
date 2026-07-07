@@ -11,6 +11,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import LoadingState from "@/components/loading/LoadingState";
 import ButtonLoader from "@/components/loading/ButtonLoader";
+import QueryThinkingWord from "@/components/chat/QueryThinkingWord";
 
 const CollectionWorkspacePage = () => {
   const { id } = useParams();
@@ -309,11 +310,11 @@ const CollectionWorkspacePage = () => {
               />
               <Button
                 type="button"
-                className="absolute bottom-3 right-3"
+                className="absolute bottom-3 right-3 w-44"
                 disabled={!canQuery || isQuerying || queryInput.trim() === ""}
                 onClick={() => void handleSubmitQuery()}
               >
-                {isQuerying ? "Querying..." : "Submit Query"}
+                {isQuerying ? <QueryThinkingWord /> : "Submit Query"}
               </Button>
             </div>
           </div>
