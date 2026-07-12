@@ -50,3 +50,28 @@ export const THINKING_WORDS: readonly string[] = [
   "Cataloging",
   "Aligning",
 ];
+
+export const STREAMING_WORDS: readonly string[] = [
+  "Answering",
+  "Writing",
+  "Streaming",
+  "Composing",
+  "Drafting",
+  "Narrating",
+  "Formulating",
+  "Articulating",
+  "Generating",
+  "Producing",
+  "Generating",
+  "Producing",
+  "Delivering",
+  "Unfolding",
+  "Rendering",
+  "Typing",
+  "Phrasing",
+  "Wording",
+  "Shaping",
+  "Building",
+  "Assembling",
+  "Presenting",
+];

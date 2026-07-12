@@ -1,11 +1,11 @@
 "use client";
-import { useCollectionStore } from "@/stores/collectionStore";
 import { useEffect } from "react";
-import CollectionCard from "@/components/collections/CollectionCard";
-import { Collection } from "@/types";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+
+import CollectionCard from "@/components/collections/CollectionCard";
 import LoadingState from "@/components/loading/LoadingState";
+import { Button } from "@/components/ui/button";
+import { useCollectionStore } from "@/stores/collectionStore";
 
 const DashboardPage = () => {
   const { collections, isLoading, fetchCollections } = useCollectionStore();

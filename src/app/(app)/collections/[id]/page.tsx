@@ -1,17 +1,19 @@
 "use client";
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState, useRef } from "react";
-import { useCollectionStore } from "@/stores/collectionStore";
+
+import { ArrowLeft } from "lucide-react";
 import { useSnackbar } from "notistack";
+
+import QueryThinkingWord from "@/components/chat/QueryThinkingWord";
+import ButtonLoader from "@/components/loading/ButtonLoader";
+import LoadingState from "@/components/loading/LoadingState";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import LoadingState from "@/components/loading/LoadingState";
-import ButtonLoader from "@/components/loading/ButtonLoader";
-import QueryThinkingWord from "@/components/chat/QueryThinkingWord";
+import { useCollectionStore } from "@/stores/collectionStore";
 
 const CollectionWorkspacePage = () => {
   const { id } = useParams();
@@ -21,12 +23,13 @@ const CollectionWorkspacePage = () => {
     queryHistory,
     documents,
     isQuerying,
+    streamingPhase,
     fetchCollection,
     fetchDocuments,
     uploadDocuments,
     deleteDocument,
     fetchQueryHistory,
-    submitQuery,
+    submitQueryStream,
   } = useCollectionStore();
   const { enqueueSnackbar } = useSnackbar();
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -135,8 +138,10 @@ const CollectionWorkspacePage = () => {
       return;
     }
     try {
-      await submitQuery(id as string, queryInput.trim());
+      // await submitQuery(id as string, queryInput.trim());
+      const question = queryInput.trim();
       setQueryInput("");
+      await submitQueryStream(id as string, question);
     } catch (error: unknown) {
       console.error("Error in submitting query: ", error);
       enqueueSnackbar("Failed to submit query", { variant: "error" });
@@ -313,7 +318,11 @@ const CollectionWorkspacePage = () => {
                 disabled={!canQuery || isQuerying || queryInput.trim() === ""}
                 onClick={() => void handleSubmitQuery()}
               >
-                {isQuerying ? <QueryThinkingWord /> : "Submit Query"}
+                {isQuerying ? (
+                  <QueryThinkingWord key={streamingPhase} phase={streamingPhase} />
+                ) : (
+                  "Submit Query"
+                )}
               </Button>
             </div>
           </div>

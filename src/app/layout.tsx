@@ -1,6 +1,8 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Spectral } from "next/font/google";
-import "./globals.css";
+
 import Providers from "@/components/providers";
 
 const spectral = Spectral({ 

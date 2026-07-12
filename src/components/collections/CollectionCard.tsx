@@ -1,22 +1,25 @@
 "use client";
-import Link from "next/link";
-import { Collection } from "@/types";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { useCollectionStore } from "@/stores/collectionStore";
-import { useSnackbar } from "notistack";
 import { useState } from "react";
+import Link from "next/link";
+
+import { Folder, Trash2 } from "lucide-react";
+import { useSnackbar } from "notistack";
+
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
-import { Folder, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCollectionStore } from "@/stores/collectionStore";
+import { Collection } from "@/types";
+
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const CollectionCard = ({ collection }: { collection: Collection }) => {
   const { deleteCollection } = useCollectionStore();

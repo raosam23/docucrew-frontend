@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { Collection, CreateCollectionPayload, DocRecord } from "@/types";
+
 import api from "@/lib/api";
+import { Collection, CreateCollectionPayload, DocRecord, StreamDoneEvent, StreamingPhase } from "@/types";
 import { QueryHistoryItem } from "@/types";
 import { QueryResponse } from "@/types";
 
@@ -11,6 +12,7 @@ type CollectionState = {
   activeCollection: Collection | null;
   queryHistory: QueryHistoryItem[];
   isQuerying: boolean;
+  streamingPhase: StreamingPhase
   fetchCollection: (collectionId: string) => Promise<void>;
   fetchCollections: () => Promise<void>;
   createCollection: (payload: CreateCollectionPayload) => Promise<Collection>;
@@ -26,6 +28,10 @@ type CollectionState = {
     collectionId: string,
     question: string,
   ) => Promise<QueryResponse>;
+  submitQueryStream: (
+    collectionId: string,
+    question: string,
+  ) => Promise<StreamDoneEvent>;
 };
 
 export const useCollectionStore = create<CollectionState>()((set) => ({
@@ -35,6 +41,7 @@ export const useCollectionStore = create<CollectionState>()((set) => ({
   activeCollection: null,
   queryHistory: [],
   isQuerying: false,
+  streamingPhase: StreamingPhase.IDLE,
   fetchCollection: async (collectionId: string) => {
     try {
       set({ isLoading: true });
@@ -205,6 +212,114 @@ export const useCollectionStore = create<CollectionState>()((set) => ({
       throw error as Error;
     } finally {
       set({ isQuerying: false });
+    }
+  },
+  submitQueryStream: async (collectionId: string, question: string) => {
+    try {
+      set({ isQuerying: true });
+      set({ streamingPhase: StreamingPhase.THINKING});
+      const pendingID = crypto.randomUUID();
+      set((state) => ({
+        queryHistory: [
+          ...state.queryHistory,
+          {
+            id: pendingID,
+            question,
+            answer: "",
+            citations: [],
+            created_at: new Date().toISOString(),
+          }
+        ]
+      }))
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/collections/${collectionId}/query/stream`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "text/event-stream",
+          },
+          body: JSON.stringify({ question }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      if (!response.body) {
+        throw new Error("No response body");
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let donePayload: StreamDoneEvent | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+        for (const part of parts) {
+          let eventName = "message";
+          let dataLine = "";
+          for (const line of part.split("\n")) {
+            if (line.startsWith("event:")) {
+              eventName = line.slice(6).trim();
+            }
+            if (line.startsWith("data:")) {
+              dataLine = line.slice(5).trim();
+            }
+          }
+          if (!dataLine) continue;
+
+          const data = JSON.parse(dataLine);
+
+          if (eventName === "token") {
+            set((state) => ({
+              streamingPhase: StreamingPhase.STREAMING,
+              queryHistory: state.queryHistory.map((item) =>
+                item.id === pendingID
+                  ? { ...item, answer: item.answer + data.content }
+                  : item,
+              ),
+            }));
+          }
+          if (eventName === "done") {
+            donePayload = data as StreamDoneEvent;
+            set((state) => ({
+              queryHistory: state.queryHistory.map((item) =>
+                item.id === pendingID
+                  ? {
+                      id: data.query_id,
+                      question,
+                      answer: data.answer,
+                      citations: data.citations,
+                      created_at: data.created_at,
+                    }
+                  : item,
+              ),
+            }));
+          }
+          if (eventName === "error") {
+            throw new Error(data.message);
+          }
+        }
+      }
+      if (!donePayload) {
+        throw new Error("Stream ended without a done event");
+      }
+      return donePayload;
+    } catch (error: unknown) {
+      console.error("Error submitting query stream: ", error);
+      throw error as Error;
+    } finally {
+      set(
+        {
+          isQuerying: false,
+          streamingPhase: StreamingPhase.IDLE,
+        }
+      );
     }
   },
 }));

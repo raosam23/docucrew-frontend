@@ -1,7 +1,8 @@
 "use client";
 
-import { Bouncy } from "ldrs/react";
 import "ldrs/react/Bouncy.css";
+
+import { Bouncy } from "ldrs/react";
 
 type ButtonLoaderProps = {
   size?: number;

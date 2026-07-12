@@ -1,13 +1,15 @@
 "use client";
-import { useCollectionStore } from "@/stores/collectionStore";
-import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
+
+import { enqueueSnackbar } from "notistack";
+
 import ButtonLoader from "@/components/loading/ButtonLoader";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useCollectionStore } from "@/stores/collectionStore";
 
 const NewCollectionPage = () => {
   const [name, setName] = useState<string>("");

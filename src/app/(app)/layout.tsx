@@ -1,12 +1,14 @@
 "use client";
-import { useAuthStore } from "@/stores/authStore";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import api from "@/lib/api";
-import { User } from "@/types";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+
 import { useSnackbar } from "notistack";
+
 import LoadingState from "@/components/loading/LoadingState";
+import { Button } from "@/components/ui/button";
+import api from "@/lib/api";
+import { useAuthStore } from "@/stores/authStore";
+import { User } from "@/types";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { setUser, user, logout } = useAuthStore();

@@ -32,7 +32,11 @@ export type CreateCollectionPayload = {
     description?: string | null;
 };
 
-
+export enum StreamingPhase {
+    IDLE = "IDLE",
+    THINKING = "THINKING",
+    STREAMING = "STREAMING",
+}
 
 export type Citation = {
     filename: string;
@@ -52,4 +56,23 @@ export type QueryHistoryItem = {
     answer: string;
     citations?: Citation[];
     created_at: string;
+}
+
+export type StreamStatusEvent = {
+    message: string;
+}
+
+export type StreamTokenEvent = {
+    content: string;
+}
+
+export type StreamDoneEvent = {
+    query_id: string;
+    answer: string;
+    citations: Citation[];
+    created_at: string;
+}
+
+export type StreamErrorEvent = {
+    message: string;
 }

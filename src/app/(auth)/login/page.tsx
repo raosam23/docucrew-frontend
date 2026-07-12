@@ -1,14 +1,16 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/authStore";
-import { useSnackbar } from "notistack";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { useSnackbar } from "notistack";
+
 import ButtonLoader from "@/components/loading/ButtonLoader";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/stores/authStore";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -79,7 +81,7 @@ const LoginPage = () => {
         </form>
         {/* Footer */}
         <p className="text-sm text-center text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/register"
             className="text-foreground font-medium underline underline-offset-4 hover:text-primary"

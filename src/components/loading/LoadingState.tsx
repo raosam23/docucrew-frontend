@@ -1,6 +1,7 @@
 "use client";
-import { Waveform } from "ldrs/react";
 import "ldrs/react/Waveform.css";
+
+import { Waveform } from "ldrs/react";
 
 type LoadingStateProps = {
   message?: string;
